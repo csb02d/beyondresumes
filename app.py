@@ -56,12 +56,22 @@ def detect_role(parsed_text):
     Analyze the following resume text and extract the most relevant job title:
     {parsed_text}
     """
-    response = openai.ChatCompletion.create(
-        model="gpt-4-turbo",
-        messages=[
-            {"role": "system", "content": "You are an AI that detects job roles from resume text."},
-            {"role": "user", "content": prompt}
-        ]
+    response = openai.client.completions.create(
+        model="gpt-4",
+        messages=[{"role": "system", "content": "You are an AI that detects job roles from resume text."},
+                  {"role": "user", "content": prompt}]
+    )
+    return response["choices"][0]["message"]["content"].strip()
+
+# Function to generate tailored questions
+def generate_role_specific_questions(role, seniority):
+    prompt = f"""
+    Generate a set of interview questions for a {seniority} {role} that tell a compelling story about their experience, leadership, and skills. Ensure the questionnaire can be completed in under 10 minutes.
+    """
+    response = openai.ChatCompletions.create(
+        model="gpt-4",
+        messages=[{"role": "system", "content": "You are an AI that creates engaging, concise interview questions."},
+                  {"role": "user", "content": prompt}]
     )
     return response["choices"][0]["message"]["content"].strip()
 
@@ -76,12 +86,10 @@ def calculate_match_percentage(candidate_story, job_description):
     Job Description:
     {job_description}
     """
-    response = openai.ChatCompletion.create(
+    response = openai.ChatCompletions.create(
         model="gpt-4",
-        messages=[
-            {"role": "system", "content": "You are an AI that evaluates job fit and provides a match percentage."},
-            {"role": "user", "content": prompt}
-        ]
+        messages=[{"role": "system", "content": "You are an AI that evaluates job fit and provides a match percentage."},
+                  {"role": "user", "content": prompt}]
     )
     return response["choices"][0]["message"]["content"].strip()
 
@@ -118,3 +126,10 @@ target_job_description = st.text_area("📄 Paste Job Description to Compare", p
 if target_job_description:
     match_percentage = calculate_match_percentage(parsed_text, target_job_description)
     st.subheader(f"🔍 AI Match Score: {match_percentage}")
+
+# Estimated completion time based on number of questions
+estimated_time = min(10, len(role_specific_questions.split("?")) * 1.5)
+
+# Main Form Layout
+st.markdown("---")
+st.subheader(f"💼 Candidate Information (Estimated Time: {int(estimated_time)} min)")
