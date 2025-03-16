@@ -12,7 +12,6 @@ import time
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 openai.api_key = OPENAI_API_KEY
-
 # Job classification system using Pave.com's job families
 job_families = {
     "Sales": ["SDR", "BDR", "Account Executive", "Sales Manager", "VP of Sales"],
@@ -56,13 +55,13 @@ def detect_role(parsed_text):
     Analyze the following resume text and extract the most relevant job title:
     {parsed_text}
     """
-    response = openai.ChatCompletion.create(  # ✅ Fixed API call
-        model="gpt-4-turbo",
-        messages=[
-            {"role": "system", "content": "You are an AI that detects job roles from resume text."},
-            {"role": "user", "content": prompt}
-        ]
-    )
+    response = openai.chat.completions.create(
+    model="gpt-4-turbo",
+    messages=[
+        {"role": "system", "content": "You are an AI that detects job roles from resume text."},
+        {"role": "user", "content": prompt}
+    ]
+)
     return response["choices"][0]["message"]["content"].strip()
 
 # Function to calculate match percentage
@@ -76,13 +75,10 @@ def calculate_match_percentage(candidate_story, job_description):
     Job Description:
     {job_description}
     """
-    response = openai.ChatCompletion.create(  # ✅ Fixed API call
-        model="gpt-4-turbo",
-        messages=[
-            {"role": "system", "content": "You are an AI that evaluates job fit and provides a match percentage."},
-            {"role": "user", "content": prompt}
-        ]
-    )
+    response = openai.client.chat.completions.create()
+    model="gpt-4-turbo",
+    messages=[{"role": "system", "content": "You are an AI that detects job roles from resume text."},
+              {"role": "user", "content": prompt}]
     return response["choices"][0]["message"]["content"].strip()
 
 # Streamlit UI Enhancements
