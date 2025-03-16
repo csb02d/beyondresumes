@@ -48,7 +48,8 @@ def generate_role_specific_questions(role, seniority):
     prompt = f"""
     Generate a set of interview questions for a {seniority} {role} that tell a compelling story about their experience, leadership, and skills. Ensure the questionnaire can be completed in under 10 minutes.
     """
-    response = openai.ChatCompletion.create(
+   response = openai.client.chat.completions.create(
+
         model="gpt-4",
         messages=[{"role": "system", "content": "You are an AI that creates strategic interview questions for pre-IPO hiring directors."},
                   {"role": "user", "content": prompt}]
