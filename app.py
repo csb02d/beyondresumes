@@ -13,6 +13,27 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 openai.api_key = OPENAI_API_KEY
 
+# Job classification system using Pave.com's job families
+job_families = {
+    "Sales": ["SDR", "BDR", "Account Executive", "Sales Manager", "VP of Sales"],
+    "Marketing": ["Marketing Coordinator", "Content Strategist", "SEO Specialist", "Growth Marketer", "CMO"],
+    "Engineering": ["Software Engineer", "Backend Developer", "Frontend Developer", "Full Stack Developer", "DevOps Engineer"],
+    "Product": ["Product Manager", "Product Designer", "UX Researcher", "Scrum Master", "Head of Product"],
+    "Data Science": ["Data Analyst", "Machine Learning Engineer", "AI Researcher", "Data Engineer", "Chief Data Officer"],
+    "Customer Success": ["Customer Support Specialist", "Customer Success Manager", "Head of Customer Success", "Implementation Specialist"],
+    "Operations": ["Operations Manager", "Chief Operating Officer", "Business Operations Analyst"],
+    "Finance": ["Financial Analyst", "Controller", "CFO"],
+    "HR": ["HR Coordinator", "Recruiter", "VP of People"],
+    "Legal": ["Legal Counsel", "Corporate Attorney", "Head of Legal"]
+}
+
+# Function to get job family based on role
+def get_job_family(role):
+    for family, roles in job_families.items():
+        if role in roles:
+            return family
+    return "Unknown"
+
 # Function to parse resumes and detect role
 def parse_resume(uploaded_file):
     if uploaded_file is not None:
@@ -35,23 +56,27 @@ def detect_role(parsed_text):
     Analyze the following resume text and extract the most relevant job title:
     {parsed_text}
     """
-    response = openai.client.chat.completions.create(
-
-        model="gpt-4",
+    response = openai.chat.completions.create(
+        model="gpt-4-turbo",
         messages=[{"role": "system", "content": "You are an AI that detects job roles from resume text."},
                   {"role": "user", "content": prompt}]
     )
     return response["choices"][0]["message"]["content"].strip()
 
-# Function to generate tailored questions
-def generate_role_specific_questions(role, seniority):
+# Function to calculate match percentage
+def calculate_match_percentage(candidate_story, job_description):
     prompt = f"""
-    Generate a set of interview questions for a {seniority} {role} that tell a compelling story about their experience, leadership, and skills. Ensure the questionnaire can be completed in under 10 minutes.
+    Compare the following candidate story with the job description and provide a match percentage (0-100%) based on skills, experience, and alignment:
+    
+    Candidate Story:
+    {candidate_story}
+    
+    Job Description:
+    {job_description}
     """
-   response = openai.client.chat.completions.create(
-
-        model="gpt-4",
-        messages=[{"role": "system", "content": "You are an AI that creates strategic interview questions for pre-IPO hiring directors."},
+    response = openai.chat.completions.create(
+        model="gpt-4-turbo",
+        messages=[{"role": "system", "content": "You are an AI that evaluates job fit and provides a match percentage."},
                   {"role": "user", "content": prompt}]
     )
     return response["choices"][0]["message"]["content"].strip()
@@ -80,48 +105,12 @@ role_detected = ""
 role_specific_questions = ""
 if parsed_text:
     role_detected = detect_role(parsed_text)
+    job_family = get_job_family(role_detected)
     st.sidebar.subheader("🎯 Detected Job Role")
-    st.sidebar.write(role_detected)
-    
-    seniority = st.sidebar.selectbox("Select Seniority Level", ["Entry-Level", "Mid-Level", "Senior", "Director", "Executive"])
-    role_specific_questions = generate_role_specific_questions(role_detected, seniority)
-    st.sidebar.subheader("📝 AI-Generated Interview Questions")
-    st.sidebar.write(role_specific_questions)
+    st.sidebar.write(f"{role_detected} (Job Family: {job_family})")
 
-# Estimated completion time based on number of questions
-estimated_time = min(10, len(role_specific_questions.split("?")) * 1.5)
-
-# Main Form Layout
-st.markdown("---")
-st.subheader(f"💼 Candidate Information (Estimated Time: {int(estimated_time)} min)")
-with st.form("candidate_form"):
-    col1, col2 = st.columns(2, gap="large")
-    
-    with col1:
-        name = st.text_input("📝 Full Name", placeholder="John Doe")
-        role = st.text_input("💼 Detected Role", value=role_detected, disabled=True)
-        tech_stack = st.text_area("🖥️ Tech Stack", placeholder="Python, React, Kubernetes, AWS, etc.", height=100)
-    
-    with col2:
-        experience = st.text_area("📜 Work Experience Summary", placeholder="Provide a concise summary of your most impactful roles and projects...", height=100)
-        skills = st.text_area("🛠️ Hard & Soft Skills", placeholder="Leadership, Distributed Systems, Agile Methodologies, Public Speaking, etc.", height=100)
-        achievements = st.text_area("🏆 Career Highlights & Differentiators", placeholder="Led Series B growth strategy, scaled engineering team from 10 to 100, secured $50M in funding...", height=100)
-    
-    submitted = st.form_submit_button("✨ Generate Portfolio")
-
-if submitted:
-    if not name or not tech_stack or not experience or not skills or not achievements:
-        st.warning("⚠️ Please fill in all fields before submitting.")
-    else:
-        candidate_data = {
-            "Name": name,
-            "Role": role_detected,
-            "Tech Stack": tech_stack,
-            "Experience Summary": experience,
-            "Skills & Competencies": skills,
-            "Career Highlights": achievements,
-            "AI-Generated Interview Questions": role_specific_questions
-        }
-        
-        st.subheader("📌 High-Impact Candidate Portfolio")
-        st.write(candidate_data)
+# Job description input for match percentage
+target_job_description = st.text_area("📄 Paste Job Description to Compare", placeholder="Paste job description here...")
+if target_job_description:
+    match_percentage = calculate_match_percentage(parsed_text, target_job_description)
+    st.subheader(f"🔍 AI Match Score: {match_percentage}")
