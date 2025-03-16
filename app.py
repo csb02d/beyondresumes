@@ -56,15 +56,16 @@ def detect_role(parsed_text):
     Analyze the following resume text and extract the most relevant job title:
     {parsed_text}
     """
-    response = openai.client.completions.create(  # ✅ Updated API call
+    response = openai.ChatCompletion.create(  # ✅ Fixed API call
         model="gpt-4-turbo",
->>>>>>> eecda2e (Fixed OpenAI API & Improved Resume Parsing)
-        messages=[{"role": "system", "content": "You are an AI that detects job roles from resume text."},
-                  {"role": "user", "content": prompt}]
+        messages=[
+            {"role": "system", "content": "You are an AI that detects job roles from resume text."},
+            {"role": "user", "content": prompt}
+        ]
     )
     return response["choices"][0]["message"]["content"].strip()
 
-# ✅ FIXED: OpenAI API Call for Job Fit Matching
+# Function to calculate match percentage
 def calculate_match_percentage(candidate_story, job_description):
     prompt = f"""
     Compare the following candidate story with the job description and provide a match percentage (0-100%) based on skills, experience, and alignment:
@@ -75,11 +76,12 @@ def calculate_match_percentage(candidate_story, job_description):
     Job Description:
     {job_description}
     """
-    response = openai.client.completions.create(  # ✅ Updated API call
+    response = openai.ChatCompletion.create(  # ✅ Fixed API call
         model="gpt-4-turbo",
->>>>>>> eecda2e (Fixed OpenAI API & Improved Resume Parsing)
-        messages=[{"role": "system", "content": "You are an AI that evaluates job fit and provides a match percentage."},
-                  {"role": "user", "content": prompt}]
+        messages=[
+            {"role": "system", "content": "You are an AI that evaluates job fit and provides a match percentage."},
+            {"role": "user", "content": prompt}
+        ]
     )
     return response["choices"][0]["message"]["content"].strip()
 
@@ -104,7 +106,6 @@ uploaded_file = st.sidebar.file_uploader("Supported formats: PDF, DOC, DOCX", ty
 parsed_text = parse_resume(uploaded_file)
 
 role_detected = ""
-role_specific_questions = ""
 if parsed_text:
     role_detected = detect_role(parsed_text)
     job_family = get_job_family(role_detected)
@@ -116,10 +117,3 @@ target_job_description = st.text_area("📄 Paste Job Description to Compare", p
 if target_job_description:
     match_percentage = calculate_match_percentage(parsed_text, target_job_description)
     st.subheader(f"🔍 AI Match Score: {match_percentage}")
-
-# Estimated completion time based on number of questions
-estimated_time = min(10, len(role_specific_questions.split("?")) * 1.5)
-
-# Main Form Layout
-st.markdown("---")
-st.subheader(f"💼 Candidate Information (Estimated Time: {int(estimated_time)} min)")
