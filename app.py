@@ -42,31 +42,40 @@ def generate_dynamic_questions(parsed_text):
     return response["choices"][0]["message"]["content"]
 
 # Streamlit UI Enhancements
-st.set_page_config(page_title="BeyondResumes - AI Candidate Portfolio", layout="centered")
-st.title("🚀 AI Candidate Portfolio Generator")
-st.write("### Designed for pre-IPO tech hiring directors who need top-tier talent insights.")
+st.set_page_config(page_title="Rising Stars - Super Stars, All Need Apply", layout="wide")
+st.title("🌟 Rising Stars - Super Stars, All Need Apply")
+st.markdown("#### Designed for pre-IPO tech hiring directors who need top-tier talent insights.")
 
-# Resume Upload Section
-uploaded_file = st.file_uploader("📂 Upload Resume (PDF, DOC, DOCX)", type=["pdf", "doc", "docx"])
+# Sidebar for File Upload
+st.sidebar.header("📂 Upload Your Resume")
+uploaded_file = st.sidebar.file_uploader("Supported formats: PDF, DOC, DOCX", type=["pdf", "doc", "docx"])
 parsed_text = parse_resume(uploaded_file)
 
 dynamic_questions = ""
 if parsed_text:
-    st.write("### 📌 Extracted Resume Content")
-    st.text_area("", parsed_text, height=150)
+    st.sidebar.subheader("📌 Extracted Resume Content")
+    st.sidebar.text_area("", parsed_text, height=150)
     
     # Generate AI-powered interview questions
     dynamic_questions = generate_dynamic_questions(parsed_text)
-    st.write("### 🎯 AI-Generated Interview Questions")
-    st.write(dynamic_questions)
+    st.sidebar.subheader("🎯 AI-Generated Interview Questions")
+    st.sidebar.write(dynamic_questions)
 
+# Main Form Layout
+st.markdown("---")
+st.subheader("💼 Candidate Information")
 with st.form("candidate_form"):
-    name = st.text_input("📝 Full Name", placeholder="John Doe")
-    role = st.text_input("💼 Desired Role", placeholder="Software Engineer")
-    tech_stack = st.text_area("🖥️ Tech Stack (Languages, Frameworks, Tools)", placeholder="Python, React, Kubernetes, AWS, etc.")
-    experience = st.text_area("📜 Work Experience Summary", placeholder="Provide a concise summary of your most impactful roles and projects...")
-    skills = st.text_area("🛠️ Hard & Soft Skills", placeholder="Leadership, Distributed Systems, Agile Methodologies, Public Speaking, etc.")
-    achievements = st.text_area("🏆 Career Highlights & Differentiators", placeholder="Led Series B growth strategy, scaled engineering team from 10 to 100, secured $50M in funding...")
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        name = st.text_input("📝 Full Name", placeholder="John Doe")
+        role = st.text_input("💼 Desired Role", placeholder="Software Engineer")
+        tech_stack = st.text_area("🖥️ Tech Stack", placeholder="Python, React, Kubernetes, AWS, etc.")
+    
+    with col2:
+        experience = st.text_area("📜 Work Experience Summary", placeholder="Provide a concise summary of your most impactful roles and projects...")
+        skills = st.text_area("🛠️ Hard & Soft Skills", placeholder="Leadership, Distributed Systems, Agile Methodologies, Public Speaking, etc.")
+        achievements = st.text_area("🏆 Career Highlights & Differentiators", placeholder="Led Series B growth strategy, scaled engineering team from 10 to 100, secured $50M in funding...")
     
     submitted = st.form_submit_button("✨ Generate Portfolio")
 
@@ -102,17 +111,19 @@ if submitted:
             pdf.ln()
         pdf_content = pdf.output(dest='S').encode('latin1')
         
-        st.download_button(
-            label="📥 Download Portfolio as PDF",
-            data=pdf_content,
-            file_name=f"{name}_portfolio.pdf",
-            mime="application/pdf"
-        )
+        col1, col2 = st.columns(2)
+        with col1:
+            st.download_button(
+                label="📥 Download Portfolio as PDF",
+                data=pdf_content,
+                file_name=f"{name}_portfolio.pdf",
+                mime="application/pdf"
+            )
         
-        # Allow user to download as Text File
-        st.download_button(
-            label="📥 Download Portfolio as Text File",
-            data=str(candidate_data),
-            file_name=f"{name}_portfolio.txt",
-            mime="text/plain"
-        )
+        with col2:
+            st.download_button(
+                label="📥 Download Portfolio as Text File",
+                data=str(candidate_data),
+                file_name=f"{name}_portfolio.txt",
+                mime="text/plain"
+            )
