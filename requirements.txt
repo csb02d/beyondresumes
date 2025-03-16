@@ -5,4 +5,5 @@ python-dotenv
 fpdf
 docx2txt
 PyPDF2
+PyPDF2
 
