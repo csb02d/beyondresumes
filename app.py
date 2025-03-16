@@ -55,7 +55,13 @@ def detect_role(parsed_text):
     Analyze the following resume text and extract the most relevant job title:
     {parsed_text}
     """
-    response = openai.chat.completions.create(
+    response = openai.ChatCompletion.create(  # ✅ Fixed API Call
+    model="gpt-4-turbo",
+    messages=[
+        {"role": "system", "content": "You are an AI that detects job roles from resume text."},
+        {"role": "user", "content": prompt}
+    ]
+)
     model="gpt-4-turbo",
     messages=[
         {"role": "system", "content": "You are an AI that detects job roles from resume text."},
@@ -107,7 +113,6 @@ if parsed_text:
     job_family = get_job_family(role_detected)
     st.sidebar.subheader("🎯 Detected Job Role")
     st.sidebar.write(f"{role_detected} (Job Family: {job_family})")
-
 # Job description input for match percentage
 target_job_description = st.text_area("📄 Paste Job Description to Compare", placeholder="Paste job description here...")
 if target_job_description:
