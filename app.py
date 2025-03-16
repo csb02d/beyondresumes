@@ -1,9 +1,12 @@
-import streamlit as st
+\import streamlit as st
 import openai
 import pandas as pd
+from dotenv import load_dotenv
+import os
 
-# OpenAI API Key (Replace with your actual API key)
-OPENAI_API_KEY = "your_openai_api_key_here"
+# Load environment variables
+load_dotenv()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 openai.api_key = OPENAI_API_KEY
 
 # Function to generate candidate profile using OpenAI
@@ -56,4 +59,3 @@ if submitted:
             file_name=f"{name}_portfolio.txt",
             mime="text/plain"
         )
-
