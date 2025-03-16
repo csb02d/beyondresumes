@@ -3,4 +3,5 @@ openai
 pandas
 python-dotenv
 fpdf
+docx2txt
 
