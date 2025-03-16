@@ -74,8 +74,32 @@ def calculate_match_percentage(candidate_story, job_description):
     Job Description:
     {job_description}
     """
+<<<<<<< HEAD
     response = openai.chat.completions.create(
         model="gpt-4-turbo",
+        messages=[{"role": "system", "content": "You are an AI that evaluates job fit and provides a match percentage."},
+=======
+    response = openai.ChatCompletions.create(
+        model="gpt-4",
+        messages=[{"role": "system", "content": "You are an AI that creates engaging, concise interview questions."},
+>>>>>>> e239d62 (Added AI match percentage for job fit evaluation)
+                  {"role": "user", "content": prompt}]
+    )
+    return response["choices"][0]["message"]["content"].strip()
+
+# Function to calculate match percentage
+def calculate_match_percentage(candidate_story, job_description):
+    prompt = f"""
+    Compare the following candidate story with the job description and provide a match percentage (0-100%) based on skills, experience, and alignment:
+    
+    Candidate Story:
+    {candidate_story}
+    
+    Job Description:
+    {job_description}
+    """
+    response = openai.ChatCompletions.create(
+        model="gpt-4",
         messages=[{"role": "system", "content": "You are an AI that evaluates job fit and provides a match percentage."},
                   {"role": "user", "content": prompt}]
     )
@@ -114,3 +138,13 @@ target_job_description = st.text_area("📄 Paste Job Description to Compare", p
 if target_job_description:
     match_percentage = calculate_match_percentage(parsed_text, target_job_description)
     st.subheader(f"🔍 AI Match Score: {match_percentage}")
+<<<<<<< HEAD
+=======
+
+# Estimated completion time based on number of questions
+estimated_time = min(10, len(role_specific_questions.split("?")) * 1.5)
+
+# Main Form Layout
+st.markdown("---")
+st.subheader(f"💼 Candidate Information (Estimated Time: {int(estimated_time)} min)")
+>>>>>>> e239d62 (Added AI match percentage for job fit evaluation)
