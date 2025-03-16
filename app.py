@@ -1,4 +1,4 @@
-\import streamlit as st
+import streamlit as st
 import openai
 import pandas as pd
 from dotenv import load_dotenv
@@ -57,5 +57,6 @@ if submitted:
             label="Download Portfolio as Text File",
             data=profile_output,
             file_name=f"{name}_portfolio.txt",
-            mime="text/plain"
+            mime="text/plain
         )
+        
