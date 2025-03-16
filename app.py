@@ -3,10 +3,9 @@ import openai
 import pandas as pd
 import os
 import docx2txt
-from PyPDF2 import PdfReader
+import pdfplumber  # Replacing PyPDF2 for better PDF text extraction
 from dotenv import load_dotenv
 from fpdf import FPDF
-import time
 
 # Load environment variables
 load_dotenv()
@@ -34,35 +33,49 @@ def get_job_family(role):
             return family
     return "Unknown"
 
-# Function to parse resumes and detect role
+# ✅ FIXED: Enhanced Resume Parsing to Handle More Formats
 def parse_resume(uploaded_file):
     if uploaded_file is not None:
         file_extension = uploaded_file.name.split(".")[-1].lower()
-        
+
         if file_extension == "pdf":
-            pdf_reader = PdfReader(uploaded_file)
-            text = "\n".join([page.extract_text() for page in pdf_reader.pages if page.extract_text()])
+            text = ""
+            with pdfplumber.open(uploaded_file) as pdf:
+                for page in pdf.pages:
+                    extracted_text = page.extract_text()
+                    if extracted_text:
+                        text += extracted_text + "\n"
+            if not text.strip():
+                text = "PDF text extraction failed. Please try a DOCX file."
+        
         elif file_extension in ["doc", "docx"]:
             text = docx2txt.process(uploaded_file)
-        else:
-            text = None
         
+        else:
+            text = "Unsupported file format."
+
         return text
     return None
 
-# Function to detect job role from resume text
+# ✅ FIXED: OpenAI API Call (APIRemovedInV1 Issue)
 def detect_role(parsed_text):
     prompt = f"""
     Analyze the following resume text and extract the most relevant job title:
     {parsed_text}
     """
+<<<<<<< HEAD
     response = openai.client.completions.create(
         model="gpt-4",
+=======
+    response = openai.client.completions.create(  # ✅ Updated API call
+        model="gpt-4-turbo",
+>>>>>>> eecda2e (Fixed OpenAI API & Improved Resume Parsing)
         messages=[{"role": "system", "content": "You are an AI that detects job roles from resume text."},
                   {"role": "user", "content": prompt}]
     )
-    return response["choices"][0]["message"]["content"].strip()
+    return response.choices[0].message.content.strip()
 
+<<<<<<< HEAD
 # Function to generate tailored questions
 def generate_role_specific_questions(role, seniority):
     prompt = f"""
@@ -76,6 +89,9 @@ def generate_role_specific_questions(role, seniority):
     return response["choices"][0]["message"]["content"].strip()
 
 # Function to calculate match percentage
+=======
+# ✅ FIXED: OpenAI API Call for Job Fit Matching
+>>>>>>> eecda2e (Fixed OpenAI API & Improved Resume Parsing)
 def calculate_match_percentage(candidate_story, job_description):
     prompt = f"""
     Compare the following candidate story with the job description and provide a match percentage (0-100%) based on skills, experience, and alignment:
@@ -86,14 +102,19 @@ def calculate_match_percentage(candidate_story, job_description):
     Job Description:
     {job_description}
     """
+<<<<<<< HEAD
     response = openai.ChatCompletions.create(
         model="gpt-4",
+=======
+    response = openai.client.completions.create(  # ✅ Updated API call
+        model="gpt-4-turbo",
+>>>>>>> eecda2e (Fixed OpenAI API & Improved Resume Parsing)
         messages=[{"role": "system", "content": "You are an AI that evaluates job fit and provides a match percentage."},
                   {"role": "user", "content": prompt}]
     )
-    return response["choices"][0]["message"]["content"].strip()
+    return response.choices[0].message.content.strip()
 
-# Streamlit UI Enhancements
+# ✅ Streamlit UI Enhancements
 st.set_page_config(page_title="Rising Stars - Super Stars, All Need Apply", layout="wide")
 st.markdown("""
     <style>
@@ -107,7 +128,7 @@ st.markdown("""
     <div class="sub-title">Designed for pre-IPO tech hiring directors who need top-tier talent insights.</div>
 """, unsafe_allow_html=True)
 
-# Sidebar for File Upload
+# ✅ Sidebar for File Upload
 st.sidebar.header("📂 Upload Your Resume")
 st.sidebar.markdown("Drag and drop a file or browse")
 uploaded_file = st.sidebar.file_uploader("Supported formats: PDF, DOC, DOCX", type=["pdf", "doc", "docx"])
@@ -121,7 +142,7 @@ if parsed_text:
     st.sidebar.subheader("🎯 Detected Job Role")
     st.sidebar.write(f"{role_detected} (Job Family: {job_family})")
 
-# Job description input for match percentage
+# ✅ Job description input for match percentage
 target_job_description = st.text_area("📄 Paste Job Description to Compare", placeholder="Paste job description here...")
 if target_job_description:
     match_percentage = calculate_match_percentage(parsed_text, target_job_description)
