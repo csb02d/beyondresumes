@@ -56,8 +56,8 @@ def detect_role(parsed_text):
     Analyze the following resume text and extract the most relevant job title:
     {parsed_text}
     """
-    response = openai.chat.completions.create(
-        model="gpt-4-turbo",
+    response = openai.ChatCompletions.create(
+        model="gpt-4",
         messages=[{"role": "system", "content": "You are an AI that detects job roles from resume text."},
                   {"role": "user", "content": prompt}]
     )
