@@ -51,40 +51,47 @@ def parse_resume(uploaded_file):
 
 # Function to detect job role from resume text
 def detect_role(parsed_text):
+    if not parsed_text:
+        return "No text detected in resume."
+
     prompt = f"""
     Analyze the following resume text and extract the most relevant job title:
     {parsed_text}
     """
-    response = openai.ChatCompletion.create(  # ✅ Fixed API Call
-    model="gpt-4-turbo",
-    messages=[
-        {"role": "system", "content": "You are an AI that detects job roles from resume text."},
-        {"role": "user", "content": prompt}
-    ]
-)
-    model="gpt-4-turbo",
-    messages=[
-        {"role": "system", "content": "You are an AI that detects job roles from resume text."},
-        {"role": "user", "content": prompt}
-    ]
-)
+    
+    response = openai.ChatCompletion.create(
+        model="gpt-4-turbo",
+        messages=[
+            {"role": "system", "content": "You are an AI that detects job roles from resume text."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+
     return response["choices"][0]["message"]["content"].strip()
 
 # Function to calculate match percentage
 def calculate_match_percentage(candidate_story, job_description):
+    if not candidate_story or not job_description:
+        return "No valid input provided."
+
     prompt = f"""
     Compare the following candidate story with the job description and provide a match percentage (0-100%) based on skills, experience, and alignment:
-    
+
     Candidate Story:
     {candidate_story}
-    
+
     Job Description:
     {job_description}
     """
-    response = openai.client.chat.completions.create()
-    model="gpt-4-turbo",
-    messages=[{"role": "system", "content": "You are an AI that detects job roles from resume text."},
-              {"role": "user", "content": prompt}]
+
+    response = openai.ChatCompletion.create(
+        model="gpt-4-turbo",
+        messages=[
+            {"role": "system", "content": "You are an AI that evaluates job fit and provides a match percentage."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+
     return response["choices"][0]["message"]["content"].strip()
 
 # Streamlit UI Enhancements
@@ -113,8 +120,10 @@ if parsed_text:
     job_family = get_job_family(role_detected)
     st.sidebar.subheader("🎯 Detected Job Role")
     st.sidebar.write(f"{role_detected} (Job Family: {job_family})")
+
 # Job description input for match percentage
 target_job_description = st.text_area("📄 Paste Job Description to Compare", placeholder="Paste job description here...")
-if target_job_description:
+
+if target_job_description and parsed_text:
     match_percentage = calculate_match_percentage(parsed_text, target_job_description)
     st.subheader(f"🔍 AI Match Score: {match_percentage}")
